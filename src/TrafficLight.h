@@ -32,13 +32,13 @@ private:
 
 class TrafficLight: TrafficObject
 {
-
-    // TODO: Where should this be?
-    enum TrafficLightPhase {red, green};
     
 public:
     // constructor / desctructor
     TrafficLight();
+
+    // Enum for traffic light states
+    enum TrafficLightPhase {red, green};
 
     // getters / setters
     TrafficLightPhase getCurrentPhase();
