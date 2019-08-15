@@ -23,22 +23,24 @@ void MessageQueue<T>::send(T &&msg)
 
 /* Implementation of class "TrafficLight" */
 
-/* 
-TrafficLight::TrafficLight()
-{
+TrafficLight::TrafficLight() {
     _currentPhase = TrafficLightPhase::red;
 }
 
-void TrafficLight::waitForGreen()
-{
+void TrafficLight::waitForGreen() {
     // FP.5b : add the implementation of the method waitForGreen, in which an infinite while-loop 
     // runs and repeatedly calls the receive function on the message queue. 
     // Once it receives TrafficLightPhase::green, the method returns.
 }
 
-TrafficLightPhase TrafficLight::getCurrentPhase()
-{
+TrafficLight::TrafficLightPhase TrafficLight::getCurrentPhase() {
     return _currentPhase;
+}
+
+void TrafficLight::TrafficLightPhaseToggle() {
+    TrafficLight::_currentPhase = (TrafficLight::getCurrentPhase() == TrafficLightPhase::red) ? TrafficLightPhase::green : TrafficLightPhase::red;
+    // Test log
+    std::cout << "Traffic Light is " << TrafficLight::getCurrentPhase() << " now.";
 }
 
 void TrafficLight::simulate()
@@ -53,6 +55,46 @@ void TrafficLight::cycleThroughPhases()
     // and toggles the current phase of the traffic light between red and green and sends an update method 
     // to the message queue using move semantics. The cycle duration should be a random value between 4 and 6 seconds. 
     // Also, the while-loop should use std::this_thread::sleep_for to wait 1ms between two cycles. 
-}
 
-*/
+    // Fields
+    // Init stop watch
+    std::chrono::time_point<std::chrono::system_clock> _lastUpdate;
+
+    // Declare and initialize starting time between light cycles (TrafficLightPhaseToggle) in seconds
+    int _lightPhaseDuration = 4;
+
+    // Keep track of number of loop cycles for sleep and work
+    int _loopCycle = 0;
+
+    while(true) {
+
+        // Check cycle
+        long timeSinceLastUpdate = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - _lastUpdate).count();
+
+        // Every two cycles do work
+        _loopCycle++;
+        if (_loopCycle >= 2) {
+
+            // 1) Toggle traffic light phase when time threshhold reached (convert from seconds to milliseconds)
+            if (timeSinceLastUpdate >= (_lightPhaseDuration * 1000 )) {
+                // Test log
+                std::cout << "timeSinceLastUpdate: " << (timeSinceLastUpdate) << std::endl;
+                // Toggle light red vs green
+                TrafficLightPhaseToggle();
+                // Set time of update
+                _lastUpdate = std::chrono::system_clock::now();
+                }
+
+            // 2) Sleep to keep processor load reasonable
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+            // 3) Reset loop cycle
+            _loopCycle = 0;
+
+            // 4) Change _lightPhaseDuration
+            _lightPhaseDuration = rand() % 6 + 4;
+        }
+
+
+    }
+}
