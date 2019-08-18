@@ -99,7 +99,10 @@ void TrafficLight::cycleThroughPhases()
                 std::cout << "timeSinceLastUpdate: " << (timeSinceLastUpdate) << std::endl;
                 // Toggle light red vs green
                 TrafficLightPhaseToggle();
-                // TODO: update method to msg queue
+
+                // Send current phase to msg queue
+                queue.send(getCurrentPhase());
+
                 // Set time of update
                 _lastUpdate = std::chrono::system_clock::now();
                 }
