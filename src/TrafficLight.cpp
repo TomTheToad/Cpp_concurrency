@@ -82,49 +82,34 @@ void TrafficLight::cycleThroughPhases()
     // Also, the while-loop should use std::this_thread::sleep_for to wait 1ms between two cycles. 
 
     // Fields
-    // Init stop watch
-    std::chrono::time_point<std::chrono::system_clock> _lastUpdate;
-
-    // Declare and initialize starting time between light cycles (TrafficLightPhaseToggle) in seconds
-    int _lightPhaseDuration = 4;
+    long _lightPhaseDuration;
 
     // Keep track of number of loop cycles for sleep and work
     int _loopCycle = 0;
 
     while(true) {
 
-        // Check cycle
-        long timeSinceLastUpdate = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - _lastUpdate).count();
+        // Change _lightPhaseDuration
+        _lightPhaseDuration = rand() % 3000 + 4000;
+        std::cout << "Light duration = " << _lightPhaseDuration << std::endl;
 
         // Every two cycles do work
         _loopCycle++;
         if (_loopCycle >= 2) {
+                
+            // Toggle light color
+            TrafficLightPhaseToggle();
 
-            // 1) Toggle traffic light phase when time threshhold reached (convert from seconds to milliseconds)
-            if (timeSinceLastUpdate >= (_lightPhaseDuration * 1000 )) {
-                // Test log
-                std::cout << "timeSinceLastUpdate: " << (timeSinceLastUpdate) << std::endl;
-                // Toggle light red vs green
-                TrafficLightPhaseToggle();
+            // Send current phase to msg queue
+            queue.send(std::move(getCurrentPhase()));
 
-                // Send current phase to msg queue
-                // queue.send(getCurrentPhase());
-                queue.send(std::move(getCurrentPhase()));
-
-                // Set time of update
-                _lastUpdate = std::chrono::system_clock::now();
-            }
-
-            // 2) Sleep to keep processor load reasonable
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
-            // 3) Reset loop cycle
+            // Reset loop cycle
             _loopCycle = 0;
 
-            // 4) Change _lightPhaseDuration
-            _lightPhaseDuration = rand() % 6 + 4;
-        }
+            // Sleep to keep processor load reasonable
+            std::this_thread::sleep_for(std::chrono::milliseconds(1 + _lightPhaseDuration));
 
+        }
 
     }
 }
